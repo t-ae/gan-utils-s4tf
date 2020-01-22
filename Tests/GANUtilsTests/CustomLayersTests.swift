@@ -1,7 +1,7 @@
 import XCTest
-@testable import CustomLayers
+@testable import GANUtils
 
-final class CustomLayersTests: XCTestCase {
+final class GANUtilsTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
