@@ -14,9 +14,9 @@ public struct ResizeLayer: ParameterlessLayer {
     public var height: Int
     
     @noDerivative
-    var alignCorners: Bool
+    public var alignCorners: Bool
     @noDerivative
-    var halfPixelCenters: Bool
+    public var halfPixelCenters: Bool
     
     public init(
         _ method: Method,
