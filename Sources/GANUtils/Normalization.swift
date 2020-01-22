@@ -4,7 +4,8 @@ import TensorFlow
 // https://arxiv.org/abs/1710.10196
 @differentiable(wrt: x)
 public func pixelNormalization(_ x: Tensor<Float>, epsilon: Float = 1e-8) -> Tensor<Float> {
-    let mean = x.squared().mean(alongAxes: -1)
+    // FIXME: mean(alongAxes: -1) cause crash.
+    let mean = x.squared().mean(alongAxes: x.rank-1)
     return x * rsqrt(mean + epsilon)
 }
 

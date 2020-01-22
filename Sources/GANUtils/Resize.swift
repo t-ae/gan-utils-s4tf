@@ -79,7 +79,7 @@ public func resizeNearestNeighbor(
     )
 }
 
-//@derivative(of: resizeNN)
+//@derivative(of: resizeNearestNeighbor)
 @usableFromInline
 func vjpResizeNearestNeighbor(
     images: Tensor<Float>,
@@ -122,7 +122,7 @@ public func resizeBilinear(
     )
 }
 
-//@derivative(of: resizeBL)
+//@derivative(of: resizeBilinear)
 @usableFromInline
 func vjpResizeBilinear(
     images: Tensor<Float>,
@@ -164,6 +164,7 @@ public func resizeBicubic(
     )
 }
 
+//@derivative(of: resizeBicubic)
 @usableFromInline
 func vjpResizeBicubic(
     images: Tensor<Float>,
