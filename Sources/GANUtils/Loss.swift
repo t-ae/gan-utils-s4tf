@@ -7,6 +7,10 @@ public enum GANLossType: String, Codable {
 public struct GANLoss {
     public var type: GANLossType
     
+    public init(_ type: GANLossType) {
+        self.type = type
+    }
+    
     @differentiable
     public func lossG(_ tensor: Tensor<Float>) -> Tensor<Float> {
         switch type {
@@ -38,6 +42,10 @@ public enum ReconstructionLossType: String, Codable {
 
 public struct ReconstructionLoss {
     public let type: ReconstructionLossType
+    
+    public init(_ type: ReconstructionLossType) {
+        self.type = type
+    }
     
     @differentiable(wrt: fake)
     public func callAsFunction(real: Tensor<Float>, fake: Tensor<Float>) -> Tensor<Float> {
