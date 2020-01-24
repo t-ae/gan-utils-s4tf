@@ -12,17 +12,20 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var enabled: Bool
     
     @noDerivative
-    public let numPowerIterations = 1
+    public var numPowerIterations: Int
     
     @noDerivative
     public let v: Parameter<Scalar>
     
     public init(
         _ dense: Dense<Scalar>,
+        numPowerIterations: Int = 1,
         enabled: Bool = true
     ) {
         self.dense = dense
         precondition(dense.weight.rank == 2, "batched dense is not supported.")
+        
+        self.numPowerIterations = numPowerIterations
         
         self.enabled = enabled
         v = Parameter(Tensor(randomNormal: [1, dense.weight.shape[1]]))
@@ -66,17 +69,19 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var enabled: Bool
     
     @noDerivative
-    public let numPowerIterations = 1
+    public var numPowerIterations: Int
     
     @noDerivative
     public let v: Parameter<Scalar>
     
     public init(
         _ conv: Conv2D<Scalar>,
+        numPowerIterations: Int = 1,
         enabled: Bool = true
     ) {
         self.conv = conv
         self.enabled = enabled
+        self.numPowerIterations = numPowerIterations
         v = Parameter(Tensor(randomNormal: [1, conv.filter.shape[3]]))
     }
     
