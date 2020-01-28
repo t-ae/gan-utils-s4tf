@@ -67,7 +67,7 @@ public func resizeArea<Scalar: Numeric>(
     images: Tensor<Scalar>,
     width: Int,
     height: Int,
-    alignCorners: Bool = true
+    alignCorners: Bool = false
 ) -> Tensor<Float> {
     _Raw.resizeArea(images: images,
                     size: Tensor([Int32(height), Int32(width)]),
