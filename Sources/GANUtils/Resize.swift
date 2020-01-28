@@ -63,6 +63,17 @@ public struct ResizeLayer: ParameterlessLayer {
     }
 }
 
+public func resizeArea<Scalar: Numeric>(
+    images: Tensor<Scalar>,
+    width: Int,
+    height: Int,
+    alignCorners: Bool = true
+) -> Tensor<Float> {
+    _Raw.resizeArea(images: images,
+                    size: Tensor([Int32(height), Int32(width)]),
+                    alignCorners: alignCorners)
+}
+
 @differentiable(wrt: images, vjp: vjpResizeNearestNeighbor)
 public func resizeNearestNeighbor(
     images: Tensor<Float>,
