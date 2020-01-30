@@ -4,19 +4,31 @@ public struct ResizeLayer: ParameterlessLayer {
     public enum Method: String, Codable {
         case nearestNeighbor, bilinear, bicubic
     }
+    public enum OutputSize {
+        case constant(width: Int, height: Int)
+        case factor(x: Int, y: Int)
+    }
     
     @noDerivative
     public var method: Method
     
     @noDerivative
-    public var width: Int
-    @noDerivative
-    public var height: Int
+    public var outputSize: OutputSize
     
     @noDerivative
     public var alignCorners: Bool
     @noDerivative
     public var halfPixelCenters: Bool
+    
+    public init(_ method: Method,
+                outputSize: OutputSize,
+                alignCorners: Bool = false,
+                halfPixelCenters: Bool = false) {
+        self.method = method
+        self.outputSize = outputSize
+        self.alignCorners = alignCorners
+        self.halfPixelCenters = halfPixelCenters
+    }
     
     public init(
         _ method: Method,
@@ -25,15 +37,23 @@ public struct ResizeLayer: ParameterlessLayer {
         alignCorners: Bool = false,
         halfPixelCenters: Bool = false
     ) {
-        self.method = method
-        self.width = width
-        self.height = height
-        self.alignCorners = alignCorners
-        self.halfPixelCenters = halfPixelCenters
+        self.init(method, outputSize: .constant(width: width, height: height),
+                  alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
     }
     
     @differentiable
     public func callAsFunction(_ input: Tensor<Float>) -> Tensor<Float> {
+        assert(input.rank == 4, "Input must be rank 4 image tensor.")
+        
+        let (width, height): (Int, Int)
+        switch outputSize {
+        case let .constant(width: w, height: h):
+            (width, height) = (w, h)
+        case let .factor(x: x, y: y):
+            width = input.shape[2] * x
+            height = input.shape[1] * y
+        }
+        
         switch method {
         case .nearestNeighbor:
             return resizeNearestNeighbor(
