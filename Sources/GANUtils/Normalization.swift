@@ -3,10 +3,27 @@ import TensorFlow
 
 // https://arxiv.org/abs/1710.10196
 @differentiable(wrt: x)
-public func pixelNormalization(_ x: Tensor<Float>, epsilon: Float = 1e-8) -> Tensor<Float> {
+public func pixelNormalization<Scalar: TensorFlowFloatingPoint>(
+    _ x: Tensor<Scalar>,
+    epsilon: Scalar = 1e-8
+) -> Tensor<Scalar> {
     // FIXME: mean(alongAxes: -1) cause crash.
     let mean = x.squared().mean(alongAxes: x.rank-1)
     return x * rsqrt(mean + epsilon)
+}
+
+public struct PixelNorm<Scalar: TensorFlowFloatingPoint>: ParameterlessLayer {
+    @noDerivative
+    private var epsilon: Scalar
+    
+    public init(epsilon: Scalar = 1e-8) {
+        self.epsilon = epsilon
+    }
+    
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        pixelNormalization(input, epsilon: epsilon)
+    }
 }
 
 public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
