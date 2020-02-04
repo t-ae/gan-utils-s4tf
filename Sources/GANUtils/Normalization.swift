@@ -37,7 +37,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
-        let normalizationAxes = [Int](1..<input.rank)
+        precondition(input.rank >= 3)
+        let normalizationAxes = [Int](1..<input.rank-1)
         let mean = input.mean(alongAxes: normalizationAxes)
         let variance = squaredDifference(input, mean).mean(alongAxes: normalizationAxes)
         let normalized = (input - mean) * rsqrt(variance + 1e-8)
