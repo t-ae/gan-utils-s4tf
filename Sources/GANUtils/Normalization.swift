@@ -39,9 +39,8 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         precondition(input.rank >= 3)
         let normalizationAxes = [Int](1..<input.rank-1)
-        let mean = input.mean(alongAxes: normalizationAxes)
-        let variance = squaredDifference(input, mean).mean(alongAxes: normalizationAxes)
-        let normalized = (input - mean) * rsqrt(variance + 1e-8)
+        let moment = input.moments(alongAxes: normalizationAxes)
+        let normalized = (input - moment.mean) * rsqrt(moment.variance + 1e-8)
         
         return scale * normalized + offset
     }
