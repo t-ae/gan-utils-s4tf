@@ -4,8 +4,12 @@ public struct MinibatchStdConcat<Scalar: TensorFlowFloatingPoint>: Parameterless
     @noDerivative
     public let groupSize: Int
     
-    public init(groupSize: Int) {
+    @noDerivative
+    public let epsilon: Scalar
+    
+    public init(groupSize: Int, epsilon: Scalar = 1e-8) {
         self.groupSize = groupSize
+        self.epsilon = epsilon
     }
     
     @differentiable
@@ -18,7 +22,7 @@ public struct MinibatchStdConcat<Scalar: TensorFlowFloatingPoint>: Parameterless
         var x = input.reshaped(to: [groupSize, b/groupSize, h, w, c])
         let mean = x.mean(alongAxes: 0)
         let variance = squaredDifference(x, mean).mean(alongAxes: 0)
-        let std = sqrt(variance + 1e-8) // [1, b/groupSize, h, w, c]
+        let std = sqrt(variance + epsilon) // [1, b/groupSize, h, w, c]
         x = std.mean(alongAxes: 2, 3, 4) // [1, b/groupSize, 1, 1, 1]
         x = x.tiled(multiples: Tensor<Int32>([Int32(groupSize), 1, Int32(h), Int32(w), 1]))
         x = x.reshaped(to: [b, h, w, 1])
