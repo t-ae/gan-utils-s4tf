@@ -30,9 +30,13 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     public var scale: Tensor<Scalar>
     public var offset: Tensor<Scalar>
     
-    public init(featureCount: Int) {
+    @noDerivative
+    public let epsilon: Scalar
+    
+    public init(featureCount: Int, epsilon: Scalar = 1e-8) {
         scale = Tensor(ones: [featureCount])
         offset = Tensor(zeros: [featureCount])
+        self.epsilon = epsilon
     }
     
     @differentiable
@@ -40,7 +44,7 @@ public struct InstanceNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         precondition(input.rank >= 3)
         let normalizationAxes = [Int](1..<input.rank-1)
         let moment = input.moments(alongAxes: normalizationAxes)
-        let normalized = (input - moment.mean) * rsqrt(moment.variance + 1e-8)
+        let normalized = (input - moment.mean) * rsqrt(moment.variance + epsilon)
         
         return scale * normalized + offset
     }
