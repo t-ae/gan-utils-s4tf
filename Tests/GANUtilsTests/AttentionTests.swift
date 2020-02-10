@@ -2,9 +2,9 @@ import XCTest
 import TensorFlow
 import GANUtils
 
-class SelfAttentionTests: XCTestCase {
+class AttentionTests: XCTestCase {
 
-    func testForward() {
+    func testSelfAttentionForward() {
         let layer = SelfAttention<Float>(channels: 16)
         var input = Tensor<Float>(ones: [1, 4, 4, 16])
         input[0, 0, 0] *= 10
