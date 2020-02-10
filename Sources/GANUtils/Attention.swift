@@ -59,3 +59,50 @@ public struct SelfAttention<Scalar: TensorFlowFloatingPoint>: Layer {
         return attention
     }
 }
+
+public struct ConvolutionalBlockAttention<Scalar: TensorFlowFloatingPoint>: Layer {
+    
+    public var dense1: Dense<Scalar>
+    public var dense2: Dense<Scalar>
+    
+    public var conv: Conv2D<Scalar>
+    
+    public init(
+        channels: Int,
+        initializer: ParameterInitializer<Scalar> = glorotUniform()
+    ) {
+        self.init(channels: channels, hiddenChannels: channels / 16, initializer: initializer)
+    }
+    
+    public init(
+        channels: Int,
+        hiddenChannels: Int,
+        initializer: ParameterInitializer<Scalar> = glorotUniform()
+    ) {
+        dense1 = Dense(inputSize: channels, outputSize: hiddenChannels, weightInitializer: initializer)
+        dense2 = Dense(inputSize: hiddenChannels, outputSize: channels, weightInitializer: initializer)
+        
+        conv = Conv2D(filterShape: (7, 7, 2, 1), padding: .same, filterInitializer: initializer)
+    }
+    
+    @differentiable
+    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+        precondition(input.rank == 4)
+        var x = input
+        
+        var max = x.max(squeezingAxes: 1, 2)
+        var avg = x.mean(squeezingAxes: 1, 2)
+        
+        max = dense2(relu(dense1(max)))
+        avg = dense2(relu(dense1(avg)))
+        
+        let channelAttention = sigmoid(max + avg)
+        x = x * channelAttention.expandingShape(at: 1, 2)
+        
+        let pooled = Tensor(concatenating: [x.max(alongAxes: 3), x.mean(alongAxes: 3)], alongAxis: 3)
+        let spatialAttention = sigmoid(conv(pooled))
+        x = x * spatialAttention
+        
+        return x
+    }
+}
