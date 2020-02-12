@@ -1,7 +1,7 @@
 import Foundation
 import TensorFlow
 
-@differentiable(wrt: tensor, vjp: vjpDepthToSpace)
+@differentiable(wrt: tensor)
 public func depthToSpace<Scalar: TensorFlowFloatingPoint>(
     _ tensor: Tensor<Scalar>,
     blockSize: Int
@@ -9,7 +9,8 @@ public func depthToSpace<Scalar: TensorFlowFloatingPoint>(
     _Raw.depthToSpace(tensor, blockSize: Int64(blockSize))
 }
 
-@usableFromInline
+@inlinable
+@derivative(of: depthToSpace)
 func vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
     _ tensor: Tensor<Scalar>,
     blockSize: Int
@@ -20,7 +21,7 @@ func vjpDepthToSpace<Scalar: TensorFlowFloatingPoint>(
     })
 }
 
-@differentiable(wrt: tensor, vjp: vjpSpaceToDepth)
+@differentiable(wrt: tensor)
 public func spaceToDepth<Scalar: TensorFlowFloatingPoint>(
     _ tensor: Tensor<Scalar>,
     blockSize: Int
@@ -28,7 +29,8 @@ public func spaceToDepth<Scalar: TensorFlowFloatingPoint>(
     _Raw.spaceToDepth(tensor, blockSize: Int64(blockSize))
 }
 
-@usableFromInline
+@inlinable
+@derivative(of: spaceToDepth)
 func vjpSpaceToDepth<Scalar: TensorFlowFloatingPoint>(
     _ tensor: Tensor<Scalar>,
     blockSize: Int

@@ -94,7 +94,7 @@ public func resizeArea<Scalar: Numeric>(
                     alignCorners: alignCorners)
 }
 
-@differentiable(wrt: images, vjp: vjpResizeNearestNeighbor)
+@differentiable(wrt: images)
 public func resizeNearestNeighbor(
     images: Tensor<Float>,
     width: Int,
@@ -110,8 +110,8 @@ public func resizeNearestNeighbor(
     )
 }
 
-//@derivative(of: resizeNearestNeighbor)
-@usableFromInline
+@inlinable
+@derivative(of: resizeNearestNeighbor)
 func vjpResizeNearestNeighbor(
     images: Tensor<Float>,
     width: Int,
@@ -137,7 +137,7 @@ func vjpResizeNearestNeighbor(
 }
 
 
-@differentiable(wrt: images, vjp: vjpResizeBilinear)
+@differentiable(wrt: images)
 public func resizeBilinear(
     images: Tensor<Float>,
     width: Int,
@@ -153,8 +153,8 @@ public func resizeBilinear(
     )
 }
 
-//@derivative(of: resizeBilinear)
-@usableFromInline
+@inlinable
+@derivative(of: resizeBilinear)
 func vjpResizeBilinear(
     images: Tensor<Float>,
     width: Int,
@@ -179,7 +179,7 @@ func vjpResizeBilinear(
     })
 }
 
-@differentiable(wrt: images, vjp: vjpResizeBicubic)
+@differentiable(wrt: images)
 public func resizeBicubic(
     images: Tensor<Float>,
     width: Int,
@@ -195,8 +195,8 @@ public func resizeBicubic(
     )
 }
 
-//@derivative(of: resizeBicubic)
-@usableFromInline
+@inlinable
+@derivative(of: resizeBicubic)
 func vjpResizeBicubic(
     images: Tensor<Float>,
     width: Int,
