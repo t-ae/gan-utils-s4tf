@@ -1,60 +1,76 @@
 import Foundation
 import TensorFlow
 
+// https://github.com/brain-research/self-attention-gan/blob/ad9612e60f6ba2b5ad3d3340ebae60f724636d75/non_local.py
 public struct SelfAttention<Scalar: TensorFlowFloatingPoint>: Layer {
     
-    public var queryConv: Conv2D<Scalar>
-    public var keyConv: Conv2D<Scalar>
-    public var valueConv: Conv2D<Scalar>
-    public var gamma: Tensor<Scalar>
+    public var thetaConv: SNConv2D<Scalar>
+    public var phiConv: SNConv2D<Scalar>
+    public var gConv: SNConv2D<Scalar>
+    public var outputConv: SNConv2D<Scalar>
+    public var sigma: Tensor<Scalar>
+    
+    public var maxPool: MaxPool2D<Scalar>
     
     public init(
         channels: Int,
+        enableSpectralNormalization: Bool = false,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform()
     ) {
-        self.init(channels: channels,
-                  hiddenChannels: channels / 8,
-                  filterInitializer: filterInitializer)
-    }
-    
-    public init(
-        channels: Int,
-        hiddenChannels: Int,
-        filterInitializer: ParameterInitializer<Scalar> = glorotUniform()
-    ) {
-        queryConv = Conv2D(filterShape: (1, 1, channels, hiddenChannels),
-                           filterInitializer: filterInitializer)
-        keyConv = Conv2D(filterShape: (1, 1, channels, hiddenChannels),
-                         filterInitializer: filterInitializer)
-        valueConv = Conv2D(filterShape: (1, 1, channels, channels),
-                           filterInitializer: filterInitializer)
-        gamma = Tensor(0)
+        precondition(channels.isMultiple(of: 8), "`channels` must be multiple of 8.")
+        
+        thetaConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 8),
+                                    filterInitializer: filterInitializer))
+        phiConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 8),
+                                  filterInitializer: filterInitializer))
+        gConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 2),
+                                filterInitializer: filterInitializer))
+        outputConv = SNConv2D(Conv2D(filterShape: (1, 1, channels / 2, channels),
+                                     filterInitializer: filterInitializer))
+        
+        sigma = Tensor(0)
+        
+        maxPool = MaxPool2D(poolSize: (2, 2), strides: (2, 2))
     }
     
     @differentiable
     public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         precondition(input.rank == 4)
+        
         let batchSize = input.shape[0]
         let spatialSize = input.shape[1] * input.shape[2]
+        let downsampledSize = spatialSize / 4
         
+        // [batchSize, spatialSize, downsampleSize]
         let attention = computeAttention(input)
         
-        // [batchSize, spatialSize, channels]
-        let value = valueConv(input).reshaped(to: [batchSize, spatialSize, -1])
+        // [batchSize, downsampleSize, channels/2]
+        var g = gConv(input)
+        g = maxPool(g).reshaped(to: [batchSize, downsampledSize, -1])
         
-        return matmul(attention, value).reshaped(to: input.shape) * gamma + input
+        var x = matmul(attention, g) // [batchSize, spatialSize, channels/2]
+        x = x.reshaped(to: input.shape.dropLast() + [g.shape[2]])
+        x = outputConv(x)
+        
+        return x * sigma + input
     }
     
     @differentiable
     public func computeAttention(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
         precondition(input.rank == 4)
+        
         let batchSize = input.shape[0]
         let spatialSize = input.shape[1] * input.shape[2]
+        let downsampledSize = spatialSize / 4
         
-        let query = queryConv(input).reshaped(to: [batchSize, spatialSize, -1])
-        let key = keyConv(input).reshaped(to: [batchSize, spatialSize, -1])
-        // [batchSize, spatialSize, spatialSize]
-        let attention = softmax(matmul(query, transposed: false, key, transposed: true))
+        let theta = thetaConv(input).reshaped(to: [batchSize, spatialSize, -1])
+        
+        var phi = phiConv(input)
+        phi = maxPool(phi).reshaped(to: [batchSize, downsampledSize, -1])
+        
+        
+        // [batchSize, spatialSize, downsampleSize]
+        let attention = softmax(matmul(theta, transposed: false, phi, transposed: true))
         
         return attention
     }
