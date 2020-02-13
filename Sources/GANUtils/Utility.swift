@@ -44,7 +44,7 @@ public func makeGrid<Scalar: TensorFlowFloatingPoint>(
     var grid = Tensor(stacking: zs)
     
     if !flatten {
-        let outputShape = TensorShape([gridSize, gridSize] + tensor.shape.dimensions.dropFirst())
+        let outputShape = TensorShape([gridSize, gridSize] + tensor.shape.dropFirst())
         grid = grid.reshaped(to: outputShape)
     }
     

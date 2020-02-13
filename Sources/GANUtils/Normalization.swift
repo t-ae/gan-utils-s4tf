@@ -66,8 +66,6 @@ public struct ConditionalBatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative
     public let featureCount: Int
     
-    public var bn: BatchNorm<Scalar>
-    
     public var gammaEmb: Embedding<Scalar>
     public var betaEmb: Embedding<Scalar>
     
@@ -88,7 +86,6 @@ public struct ConditionalBatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
         epsilon: Scalar = 1e-3
     ) {
         self.featureCount = featureCount
-        self.bn = BatchNorm(featureCount: featureCount)
         self.gammaEmb = Embedding(embeddings: Tensor<Scalar>(ones: [numClass, featureCount]))
         self.betaEmb = Embedding(embeddings: Tensor<Scalar>(zeros: [numClass, featureCount]))
         

@@ -4,7 +4,7 @@ import GANUtils
 
 class SpectralNormalizationTests: XCTestCase {
 
-    func testSpectralNorm() {
+    func testSNDense() {
         let dense = SNDense<Float>(Dense(inputSize: 10, outputSize: 8))
         
         let input = Tensor<Float>(randomNormal: [8, 10])
@@ -24,7 +24,5 @@ class SpectralNormalizationTests: XCTestCase {
         XCTAssertEqual(svd.s[0].scalarized(), 1, accuracy: 1e-3)
         
         Context.local.learningPhase = .inference
-        
     }
-
 }
