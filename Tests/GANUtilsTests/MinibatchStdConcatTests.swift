@@ -24,5 +24,4 @@ class MinibatchStdConcatTests: XCTestCase {
         XCTAssertEqual(out[6, 0, 0, 3], Tensor(50))
         XCTAssertEqual(out[7, 0, 0, 3], Tensor(5))
     }
-
 }

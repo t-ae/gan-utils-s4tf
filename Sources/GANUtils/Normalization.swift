@@ -71,20 +71,52 @@ public struct ConditionalBatchNorm<Scalar: TensorFlowFloatingPoint>: Layer {
     public var gammaEmb: Embedding<Scalar>
     public var betaEmb: Embedding<Scalar>
     
-    public init(featureCount: Int) {
+    @noDerivative
+    public let momentum: Scalar
+    @noDerivative
+    public let epsilon: Scalar
+    
+    @noDerivative
+    public var runningMean: Parameter<Scalar>
+    @noDerivative
+    public var runningVariance: Parameter<Scalar>
+    
+    public init(
+        numClass: Int,
+        featureCount: Int,
+        momentum: Scalar = 0.99,
+        epsilon: Scalar = 1e-3
+    ) {
         self.featureCount = featureCount
         self.bn = BatchNorm(featureCount: featureCount)
-        self.gammaEmb = Embedding(embeddings: Tensor<Scalar>(ones: [10, featureCount]))
-        self.betaEmb = Embedding(embeddings: Tensor<Scalar>(zeros: [10, featureCount]))
+        self.gammaEmb = Embedding(embeddings: Tensor<Scalar>(ones: [numClass, featureCount]))
+        self.betaEmb = Embedding(embeddings: Tensor<Scalar>(zeros: [numClass, featureCount]))
+        
+        self.momentum = momentum
+        self.epsilon = epsilon
+        
+        self.runningMean = Parameter(Tensor(0))
+        self.runningVariance = Parameter(Tensor(1))
     }
     
     @differentiable
     public func callAsFunction(_ input: Input) -> Tensor<Scalar> {
-        let x = bn(input.feature)
+        let gamma = gammaEmb(input.label).expandingShape(at: 1, 2) // [batchSize, featureCount]
+        let beta = betaEmb(input.label).expandingShape(at: 1, 2) // [batchSize, featureCount]
         
-        let gamma = gammaEmb(input.label).expandingShape(at: 1, 2)
-        let beta = betaEmb(input.label).expandingShape(at: 1, 2)
-        
-        return x  * gamma + beta
+        let x = input.feature
+        switch Context.local.learningPhase {
+        case .training:
+          let normalizedAxes = Array(0..<x.rank-1) // Exclude last feature axis
+          let moments = x.moments(alongAxes: normalizedAxes)
+          let decayMomentum = Tensor(1 - momentum, on: x.device)
+          runningMean.value += (moments.mean - runningMean.value) * decayMomentum
+          runningVariance.value += (moments.variance - runningVariance.value) * decayMomentum
+          let inv = rsqrt(moments.variance + Tensor(epsilon, on: x.device)) * gamma
+          return (x - moments.mean) * inv + beta
+        case .inference:
+          let inv = rsqrt(runningVariance.value + Tensor(epsilon, on: x.device)) * gamma
+          return (x - runningMean.value) * inv + beta
+        }
     }
 }

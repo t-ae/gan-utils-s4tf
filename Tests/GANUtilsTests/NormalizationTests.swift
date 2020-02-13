@@ -25,6 +25,7 @@ class NormalizationTests: XCTestCase {
             XCTAssert(len.isAlmostEqual(to: Tensor(repeating: Float(length), shape: len.shape)))
         }
     }
+    
     func testPixelNormGrad() {
         let length = 32
         let tensor = Tensor<Float>(randomNormal: [1, length*length])
@@ -33,5 +34,24 @@ class NormalizationTests: XCTestCase {
             pixelNormalization(tensor).sum()
         }
         print(g)
+    }
+    
+    func testInstanceNorm() {
+        let norm = InstanceNorm<Float>(featureCount: 8)
+        let features = Tensor<Float>(randomNormal: [2, 4, 4, 8])
+        
+        let output = norm(features)
+        
+        XCTAssertEqual(output.shape, features.shape)
+    }
+    
+    func testConditionalBatchNorm() {
+        let norm = ConditionalBatchNorm<Float>(numClass: 3, featureCount: 8)
+        let features = Tensor<Float>(randomNormal: [2, 4, 4, 8])
+        let labels = Tensor<Int32>([0, 1])
+        
+        let output = norm(.init(feature: features, label: labels))
+        
+        XCTAssertEqual(output.shape, features.shape)
     }
 }
