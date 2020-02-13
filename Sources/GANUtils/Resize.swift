@@ -1,6 +1,6 @@
 import TensorFlow
 
-public struct ResizeLayer: ParameterlessLayer {
+public struct Resize: ParameterlessLayer {
     public enum Method: String, Codable {
         case nearestNeighbor, bilinear, bicubic
     }
