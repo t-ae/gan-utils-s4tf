@@ -49,7 +49,7 @@ public struct SelfAttention<Scalar: TensorFlowFloatingPoint>: Layer {
         g = maxPool(g).reshaped(to: [batchSize, downsampledSize, -1])
         
         var x = matmul(attention, g) // [batchSize, spatialSize, channels/2]
-        x = x.reshaped(to: input.shape.dropLast() + [g.shape[2]])
+        x = x.reshaped(to: input.shape.dropLast() + [x.shape[2]])
         x = outputConv(x)
         
         return x * sigma + input
