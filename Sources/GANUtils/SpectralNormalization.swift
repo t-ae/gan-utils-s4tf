@@ -40,7 +40,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         let mat = dense.weight.reshaped(to: [-1, outputDim])
         
         var u = Tensor<Scalar>(0)
-        var v = self.v.value
+        var v = withoutDerivative(at: self.v.value)
         for _ in 0..<numPowerIterations {
             u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
             v = l2normalize(matmul(u, mat)) // [1, cols]
@@ -94,7 +94,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         let mat = conv.filter.reshaped(to: [-1, outputDim])
         
         var u = Tensor<Scalar>(0)
-        var v = self.v.value
+        var v = withoutDerivative(at: self.v.value)
         for _ in 0..<numPowerIterations {
             u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
             v = l2normalize(matmul(u, mat)) // [1, cols]
