@@ -19,14 +19,14 @@ public struct SelfAttention<Scalar: TensorFlowFloatingPoint>: Layer {
     ) {
         precondition(channels.isMultiple(of: 8), "`channels` must be multiple of 8.")
         
-        thetaConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 8),
-                                    filterInitializer: filterInitializer))
-        phiConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 8),
-                                  filterInitializer: filterInitializer))
-        gConv = SNConv2D(Conv2D(filterShape: (1, 1, channels, channels / 2),
-                                filterInitializer: filterInitializer))
-        outputConv = SNConv2D(Conv2D(filterShape: (1, 1, channels / 2, channels),
-                                     filterInitializer: filterInitializer))
+        thetaConv = SNConv2D(filterShape: (1, 1, channels, channels / 8),
+                             filterInitializer: filterInitializer)
+        phiConv = SNConv2D(filterShape: (1, 1, channels, channels / 8),
+                           filterInitializer: filterInitializer)
+        gConv = SNConv2D(filterShape: (1, 1, channels, channels / 2),
+                         filterInitializer: filterInitializer)
+        outputConv = SNConv2D(filterShape: (1, 1, channels / 2, channels),
+                              filterInitializer: filterInitializer)
         
         sigma = Tensor(0)
         
