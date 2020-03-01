@@ -18,7 +18,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
     private let useBias: Bool
     
     @noDerivative
-    public var enabled: Bool
+    public var spectralNormalizationEnabled: Bool
     
     @noDerivative
     public var numPowerIterations: Int
@@ -34,7 +34,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation,
         numPowerIterations: Int = 1,
-        enabled: Bool = true
+        spectralNormalizationEnabled: Bool = true
     ) {
         precondition(weight.rank == 2, "The rank of the 'weight' tensor must be 2.")
         self.weight = weight
@@ -43,13 +43,13 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         useBias = (bias != nil)
         
         self.numPowerIterations = numPowerIterations
-        self.enabled = enabled
+        self.spectralNormalizationEnabled = spectralNormalizationEnabled
         self.v = Parameter(Tensor(randomNormal: [1, weight.shape[1]]))
     }
     
     @differentiable
     public func wBar() -> Tensor<Scalar> {
-        guard enabled else {
+        guard spectralNormalizationEnabled else {
             return weight
         }
         let outputDim = weight.shape[1]
@@ -86,7 +86,7 @@ public extension SNDense {
         activation: @escaping Activation = identity,
         useBias: Bool = true,
         numPowerIterations: Int = 1,
-        enabled: Bool = true,
+        spectralNormalizationEnabled: Bool = true,
         weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -95,7 +95,7 @@ public extension SNDense {
             bias: useBias ? biasInitializer([outputSize]) : nil,
             activation: activation,
             numPowerIterations: numPowerIterations,
-            enabled: enabled)
+            spectralNormalizationEnabled: spectralNormalizationEnabled)
     }
 }
 
@@ -118,7 +118,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     private let useBias: Bool
     
     @noDerivative
-    public var enabled: Bool
+    public var spectralNormalizationEnabled: Bool
     
     @noDerivative
     public var numPowerIterations: Int
@@ -136,7 +136,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         numPowerIterations: Int = 1,
-        enabled: Bool = true
+        spectralNormalizationEnabled: Bool = true
     ) {
         self.filter = filter
         self.bias = bias ?? .zero
@@ -146,13 +146,13 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         useBias = (bias != nil)
         
         self.numPowerIterations = numPowerIterations
-        self.enabled = enabled
+        self.spectralNormalizationEnabled = spectralNormalizationEnabled
         v = Parameter(Tensor(randomNormal: [1, filter.shape[3]]))
     }
     
     @differentiable
     public func wBar() -> Tensor<Scalar> {
-        guard enabled else {
+        guard spectralNormalizationEnabled else {
             return filter
         }
         let outputDim = filter.shape[3]
@@ -196,7 +196,7 @@ public extension SNConv2D {
         activation: @escaping Activation = identity,
         useBias: Bool = true,
         numPowerIterations: Int = 1,
-        enabled: Bool = true,
+        spectralNormalizationEnabled: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -209,6 +209,6 @@ public extension SNConv2D {
             strides: strides,
             padding: padding,
             numPowerIterations: numPowerIterations,
-            enabled: enabled)
+            spectralNormalizationEnabled: spectralNormalizationEnabled)
     }
 }
