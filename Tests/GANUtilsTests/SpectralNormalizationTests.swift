@@ -5,7 +5,7 @@ import GANUtils
 class SpectralNormalizationTests: XCTestCase {
 
     func testSNDense() {
-        let dense = SNDense<Float>(Dense(inputSize: 10, outputSize: 8))
+        let dense = SNDense<Float>(inputSize: 10, outputSize: 8)
         
         let input = Tensor<Float>(randomNormal: [8, 10])
         
