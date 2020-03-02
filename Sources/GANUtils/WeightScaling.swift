@@ -14,7 +14,7 @@ public struct WSDense<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative
     internal let batched: Bool
     @noDerivative
-    private let useBias: Bool
+    public let useBias: Bool
 
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
@@ -62,7 +62,7 @@ public extension WSDense {
 }
 
 
-public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+public struct WSConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
     @noDerivative
     public let scale: Scalar
@@ -76,7 +76,7 @@ public struct Conv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative
     public let dilations: (Int, Int)
     @noDerivative
-    private let useBias: Bool
+    public let useBias: Bool
 
     public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
 
