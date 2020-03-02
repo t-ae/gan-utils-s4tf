@@ -111,7 +111,7 @@ public struct WSConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     }
 }
 
-public extension Conv2D {
+public extension WSConv2D {
     init(
         filterShape: (Int, Int, Int, Int),
         strides: (Int, Int) = (1, 1),
