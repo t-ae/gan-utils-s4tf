@@ -15,7 +15,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
     public let activation: Activation
     /// Workaround optionals not being handled by AD
     @noDerivative
-    private let useBias: Bool
+    public let useBias: Bool
     
     @noDerivative
     public var spectralNormalizationEnabled: Bool
@@ -115,7 +115,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public let padding: Padding
     /// Note: `useBias` is a workaround for TF-1153: optional differentiation support.
     @noDerivative
-    private let useBias: Bool
+    public let useBias: Bool
     
     @noDerivative
     public var spectralNormalizationEnabled: Bool
