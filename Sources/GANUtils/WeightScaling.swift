@@ -21,11 +21,12 @@ public struct WSDense<Scalar: TensorFlowFloatingPoint>: Layer {
     public init(
         weight: Tensor<Scalar>,
         bias: Tensor<Scalar>? = nil,
-        activation: @escaping Activation
+        activation: @escaping Activation,
+        enableWeightScaling: Bool = true
     ) {
         precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
         precondition(bias == nil || bias!.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
-        scale = weight.standardDeviation().scalarized()
+        scale = enableWeightScaling ? weight.standardDeviation().scalarized() : 1
         self.weight = weight / scale
         
         self.bias = bias ?? .zero
@@ -51,13 +52,15 @@ public extension WSDense {
         outputSize: Int,
         activation: @escaping Activation = identity,
         useBias: Bool = true,
+        enableWeightScaling: Bool = true,
         weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
         self.init(
             weight: weightInitializer([inputSize, outputSize]),
             bias: useBias ? biasInitializer([outputSize]) : nil,
-            activation: activation)
+            activation: activation,
+            enableWeightScaling: enableWeightScaling)
     }
 }
 
@@ -86,9 +89,10 @@ public struct WSConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         activation: @escaping Activation = identity,
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
-        dilations: (Int, Int) = (1, 1)
+        dilations: (Int, Int) = (1, 1),
+        enableWeightScaling: Bool = true
     ) {
-        scale = filter.standardDeviation().scalarized()
+        scale = enableWeightScaling ? filter.standardDeviation().scalarized() : 1
         self.filter = filter / scale
         
         self.bias = bias ?? .zero
@@ -119,6 +123,7 @@ public extension WSConv2D {
         dilations: (Int, Int) = (1, 1),
         activation: @escaping Activation = identity,
         useBias: Bool = true,
+        enableWeightScaling: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -130,6 +135,7 @@ public extension WSConv2D {
             activation: activation,
             strides: strides,
             padding: padding,
-            dilations: dilations)
+            dilations: dilations,
+            enableWeightScaling: enableWeightScaling)
     }
 }
