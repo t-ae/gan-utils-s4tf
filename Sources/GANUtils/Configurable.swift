@@ -1,7 +1,16 @@
 import Foundation
 import TensorFlow
 
-public struct Configurable<L: Layer>: Layer where L.Input == L.Output {
+public protocol ConfigurableLayer: Layer {}
+
+extension BatchNorm: ConfigurableLayer {}
+extension LayerNorm: ConfigurableLayer {}
+
+extension PixelNorm: ConfigurableLayer {}
+extension ConditionalBatchNorm: ConfigurableLayer {}
+extension InstanceNorm: ConfigurableLayer {}
+
+public struct Configurable<L: ConfigurableLayer>: Layer where L.Input == L.Output {
     public var layer: L
     
     @noDerivative
