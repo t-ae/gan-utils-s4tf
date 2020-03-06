@@ -23,5 +23,4 @@ class AttentionTests: XCTestCase {
         let output = layer(input)
         XCTAssertEqual(output.shape, input.shape)
     }
-
 }
