@@ -1,6 +1,7 @@
 import Foundation
 import TensorFlow
 
+// https://arxiv.org/abs/1806.04498
 public class ModelAveraging<Model: Layer> where Model.TangentVector.VectorSpaceScalar == Float {
     public var average: Model
     
