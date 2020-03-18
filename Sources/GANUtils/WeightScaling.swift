@@ -6,8 +6,9 @@ import TensorFlow
 
 public struct WSDense<Scalar: TensorFlowFloatingPoint>: Layer {
     public var weight: Tensor<Scalar>
+    // It's sclara but not `Scalar` in order to avoid TF-1207
     @noDerivative
-    public let scale: Scalar
+    public let scale: Tensor<Scalar>
     public var bias: Tensor<Scalar>
     @noDerivative
     public let activation: Activation
@@ -26,7 +27,7 @@ public struct WSDense<Scalar: TensorFlowFloatingPoint>: Layer {
     ) {
         precondition(weight.rank <= 3, "The rank of the 'weight' tensor must be less than 4.")
         precondition(bias == nil || bias!.rank <= 2, "The rank of the 'bias' tensor must be less than 3.")
-        scale = enableWeightScaling ? weight.standardDeviation().scalarized() : 1
+        scale = Tensor(enableWeightScaling ? weight.standardDeviation().scalarized() : 1)
         self.weight = weight / scale
         
         self.bias = bias ?? .zero
@@ -67,8 +68,9 @@ public extension WSDense {
 
 public struct WSConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
+    // It's sclara but not `Scalar` in order to avoid TF-1207
     @noDerivative
-    public let scale: Scalar
+    public let scale: Tensor<Scalar>
     public var bias: Tensor<Scalar>
     @noDerivative
     public let activation: Activation
@@ -92,7 +94,7 @@ public struct WSConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         dilations: (Int, Int) = (1, 1),
         enableWeightScaling: Bool = true
     ) {
-        scale = enableWeightScaling ? filter.standardDeviation().scalarized() : 1
+        scale = Tensor(enableWeightScaling ? filter.standardDeviation().scalarized() : 1)
         self.filter = filter / scale
         
         self.bias = bias ?? .zero
@@ -142,8 +144,9 @@ public extension WSConv2D {
 
 public struct WSTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public var filter: Tensor<Scalar>
+    // It's sclara but not `Scalar` in order to avoid TF-1207
     @noDerivative
-    public let scale: Scalar
+    public let scale: Tensor<Scalar>
     public var bias: Tensor<Scalar>
     @noDerivative public let activation: Activation
     @noDerivative public let strides: (Int, Int)
@@ -161,7 +164,7 @@ public struct WSTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         padding: Padding = .valid,
         enableWeightScaling: Bool = true
     ) {
-        scale = enableWeightScaling ? filter.standardDeviation().scalarized() : 1
+        scale = Tensor(enableWeightScaling ? filter.standardDeviation().scalarized() : 1)
         self.filter = filter / scale
         self.bias = bias ?? .zero
         self.activation = activation
