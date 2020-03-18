@@ -2,7 +2,7 @@ import Foundation
 import TensorFlow
 
 // https://arxiv.org/abs/1806.04498
-public class ModelAveraging<Model: Layer> where Model.TangentVector.VectorSpaceScalar == Float {
+public class ModelAveraging<Model: Layer> {
     public var average: Model
     
     public let beta: Float
@@ -15,6 +15,9 @@ public class ModelAveraging<Model: Layer> where Model.TangentVector.VectorSpaceS
     public func update(model: Model) {
         for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Float>.self) {
             average[keyPath: kp] = lerp(model[keyPath: kp], average[keyPath: kp], rate: beta)
+        }
+        for kp in model.recursivelyAllWritableKeyPaths(to: Tensor<Double>.self) {
+            average[keyPath: kp] = lerp(model[keyPath: kp], average[keyPath: kp], rate: Double(beta))
         }
     }
 }
