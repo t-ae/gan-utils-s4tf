@@ -129,7 +129,7 @@ func vjpResizeNearestNeighbor(
     return (resized, { v in
         _Raw.resizeNearestNeighborGrad(
             grads: v,
-            size: Tensor([Int32(height), Int32(width)]),
+            size: Tensor([Int32(images.shape[1]), Int32(images.shape[2])]),
             alignCorners: alignCorners,
             halfPixelCenters: halfPixelCenters
         )
