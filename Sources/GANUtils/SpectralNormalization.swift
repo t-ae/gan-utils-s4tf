@@ -212,3 +212,109 @@ public extension SNConv2D {
             spectralNormalizationEnabled: spectralNormalizationEnabled)
     }
 }
+
+//public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
+//    public var filter: Tensor<Scalar>
+//    public var bias: Tensor<Scalar>
+//    @noDerivative public let activation: Activation
+//    @noDerivative public let strides: (Int, Int)
+//    @noDerivative public let padding: Padding
+//    @noDerivative public let paddingIndex: Int
+//    @noDerivative private let useBias: Bool
+//    @noDerivative
+//    public var spectralNormalizationEnabled: Bool
+//    @noDerivative
+//    public var numPowerIterations: Int
+//    @noDerivative
+//    public let v: Parameter<Scalar>
+//    
+//    public typealias Activation = @differentiable (Tensor<Scalar>) -> Tensor<Scalar>
+//    
+//    public init(
+//        filter: Tensor<Scalar>,
+//        bias: Tensor<Scalar>? = nil,
+//        activation: @escaping Activation = identity,
+//        strides: (Int, Int) = (1, 1),
+//        padding: Padding = .valid,
+//        numPowerIterations: Int = 1,
+//        spectralNormalizationEnabled: Bool = true
+//    ) {
+//        self.filter = filter
+//        self.bias = bias ?? .zero
+//        self.activation = activation
+//        self.strides = strides
+//        self.padding = padding
+//        self.paddingIndex = padding == .same ? 0 : 1
+//        useBias = (bias != nil)
+//        self.numPowerIterations = numPowerIterations
+//        self.spectralNormalizationEnabled = spectralNormalizationEnabled
+//        v = Parameter(Tensor(randomNormal: [1, filter.shape[3]]))
+//    }
+//    
+//    @differentiable
+//    public func wBar() -> Tensor<Scalar> {
+//        guard spectralNormalizationEnabled else {
+//            return filter
+//        }
+//        let outputDim = filter.shape[3]
+//        let mat = filter.reshaped(to: [-1, outputDim])
+//        
+//        var u = Tensor<Scalar>(0)
+//        var v = withoutDerivative(at: self.v.value)
+//        for _ in 0..<numPowerIterations {
+//            u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
+//            v = l2normalize(matmul(u, mat)) // [1, cols]
+//        }
+//        
+//        let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
+//        
+//        if Context.local.learningPhase == .training {
+//            self.v.value = v
+//        }
+//        
+//        // Should detach sigma?
+//        return filter / sigma
+//    }
+//    
+//    @differentiable
+//    public func callAsFunction(_ input: Tensor<Scalar>) -> Tensor<Scalar> {
+//        let batchSize = input.shape[0]
+//        let h = (input.shape[1] - (1 * paddingIndex)) * strides.0 + (filter.shape[0] * paddingIndex)
+//        let w = (input.shape[2] - (1 * paddingIndex)) * strides.1 + (filter.shape[1] * paddingIndex)
+//        let c = filter.shape[2]
+//        let newShape = [Int64(batchSize), Int64(h), Int64(w), Int64(c)]
+//        let conv = transposedConv2D(
+//            input,
+//            shape: newShape,
+//            filter: wBar(),
+//            strides: (1, strides.0, strides.1, 1),
+//            padding: padding)
+//        return activation(useBias ? (conv + bias) : conv)
+//    }
+//}
+//
+//extension SNTransposedConv2D {
+//    public init(
+//        filterShape: (Int, Int, Int, Int),
+//        strides: (Int, Int) = (1, 1),
+//        padding: Padding = .valid,
+//        activation: @escaping Activation = identity,
+//        useBias: Bool = true,
+//        numPowerIterations: Int = 1,
+//        spectralNormalizationEnabled: Bool = true,
+//        filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
+//        biasInitializer: ParameterInitializer<Scalar> = zeros()
+//    ) {
+//        let filterTensorShape = TensorShape([
+//            filterShape.0, filterShape.1, filterShape.2, filterShape.3,
+//        ])
+//        self.init(
+//            filter: filterInitializer(filterTensorShape),
+//            bias: useBias ? biasInitializer([filterShape.2]) : nil,
+//            activation: activation,
+//            strides: strides,
+//            padding: padding,
+//            numPowerIterations: numPowerIterations,
+//            spectralNormalizationEnabled: spectralNormalizationEnabled)
+//    }
+//}
