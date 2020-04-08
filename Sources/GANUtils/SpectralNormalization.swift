@@ -18,7 +18,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
     public let useBias: Bool
     
     @noDerivative
-    public var spectralNormalizationEnabled: Bool
+    public var enableSpectralNormalization: Bool
     
     @noDerivative
     public var numPowerIterations: Int
@@ -34,7 +34,7 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         bias: Tensor<Scalar>? = nil,
         activation: @escaping Activation,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true
+        enableSpectralNormalization: Bool = true
     ) {
         precondition(weight.rank == 2, "The rank of the 'weight' tensor must be 2.")
         self.weight = weight
@@ -43,13 +43,13 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         useBias = (bias != nil)
         
         self.numPowerIterations = numPowerIterations
-        self.spectralNormalizationEnabled = spectralNormalizationEnabled
+        self.enableSpectralNormalization = enableSpectralNormalization
         self.v = Parameter(Tensor(randomNormal: [1, weight.shape[1]]))
     }
     
     @differentiable
     public func wBar() -> Tensor<Scalar> {
-        guard spectralNormalizationEnabled else {
+        guard enableSpectralNormalization else {
             return weight
         }
         let outputDim = weight.shape[1]
@@ -87,7 +87,7 @@ public extension SNDense {
         activation: @escaping Activation = identity,
         useBias: Bool = true,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true,
+        enableSpectralNormalization: Bool = true,
         weightInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -96,7 +96,7 @@ public extension SNDense {
             bias: useBias ? biasInitializer([outputSize]) : nil,
             activation: activation,
             numPowerIterations: numPowerIterations,
-            spectralNormalizationEnabled: spectralNormalizationEnabled)
+            enableSpectralNormalization: enableSpectralNormalization)
     }
 }
 
@@ -119,7 +119,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     public let useBias: Bool
     
     @noDerivative
-    public var spectralNormalizationEnabled: Bool
+    public var enableSpectralNormalization: Bool
     
     @noDerivative
     public var numPowerIterations: Int
@@ -137,7 +137,7 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true
+        enableSpectralNormalization: Bool = true
     ) {
         self.filter = filter
         self.bias = bias ?? .zero
@@ -147,13 +147,13 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         useBias = (bias != nil)
         
         self.numPowerIterations = numPowerIterations
-        self.spectralNormalizationEnabled = spectralNormalizationEnabled
+        self.enableSpectralNormalization = enableSpectralNormalization
         v = Parameter(Tensor(randomNormal: [1, filter.shape[3]]))
     }
     
     @differentiable
     public func wBar() -> Tensor<Scalar> {
-        guard spectralNormalizationEnabled else {
+        guard enableSpectralNormalization else {
             return filter
         }
         let outputDim = filter.shape[3]
@@ -198,7 +198,7 @@ public extension SNConv2D {
         activation: @escaping Activation = identity,
         useBias: Bool = true,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true,
+        enableSpectralNormalization: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -211,7 +211,7 @@ public extension SNConv2D {
             strides: strides,
             padding: padding,
             numPowerIterations: numPowerIterations,
-            spectralNormalizationEnabled: spectralNormalizationEnabled)
+            enableSpectralNormalization: enableSpectralNormalization)
     }
 }
 
@@ -224,7 +224,7 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
     @noDerivative public let paddingIndex: Int
     @noDerivative private let useBias: Bool
     @noDerivative
-    public var spectralNormalizationEnabled: Bool
+    public var enableSpectralNormalization: Bool
     @noDerivative
     public var numPowerIterations: Int
     @noDerivative
@@ -239,7 +239,7 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         strides: (Int, Int) = (1, 1),
         padding: Padding = .valid,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true
+        enableSpectralNormalization: Bool = true
     ) {
         self.filter = filter
         self.bias = bias ?? .zero
@@ -249,13 +249,13 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         self.paddingIndex = padding == .same ? 0 : 1
         useBias = (bias != nil)
         self.numPowerIterations = numPowerIterations
-        self.spectralNormalizationEnabled = spectralNormalizationEnabled
+        self.enableSpectralNormalization = enableSpectralNormalization
         v = Parameter(Tensor(randomNormal: [1, filter.shape[3]]))
     }
     
     @differentiable
     public func wBar() -> Tensor<Scalar> {
-        guard spectralNormalizationEnabled else {
+        guard enableSpectralNormalization else {
             return filter
         }
         let outputDim = filter.shape[3]
@@ -305,7 +305,7 @@ extension SNTransposedConv2D {
         activation: @escaping Activation = identity,
         useBias: Bool = true,
         numPowerIterations: Int = 1,
-        spectralNormalizationEnabled: Bool = true,
+        enableSpectralNormalization: Bool = true,
         filterInitializer: ParameterInitializer<Scalar> = glorotUniform(),
         biasInitializer: ParameterInitializer<Scalar> = zeros()
     ) {
@@ -319,6 +319,6 @@ extension SNTransposedConv2D {
             strides: strides,
             padding: padding,
             numPowerIterations: numPowerIterations,
-            spectralNormalizationEnabled: spectralNormalizationEnabled)
+            enableSpectralNormalization: enableSpectralNormalization)
     }
 }
