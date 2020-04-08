@@ -61,6 +61,8 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
             u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
             v = l2normalize(matmul(u, mat)) // [1, cols]
         }
+        u = withoutDerivative(at: u)
+        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         
@@ -68,7 +70,6 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
             self.v.value = v
         }
         
-        // Should detach sigma?
         return weight / sigma
     }
 
@@ -164,6 +165,8 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
             u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
             v = l2normalize(matmul(u, mat)) // [1, cols]
         }
+        u = withoutDerivative(at: u)
+        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         
@@ -171,7 +174,6 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
             self.v.value = v
         }
         
-        // Should detach sigma?
         return filter / sigma
     }
 
@@ -265,6 +267,8 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
             u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
             v = l2normalize(matmul(u, mat)) // [1, cols]
         }
+        u = withoutDerivative(at: u)
+        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         
@@ -272,7 +276,6 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
             self.v.value = v
         }
         
-        // Should detach sigma?
         return filter / sigma
     }
     
