@@ -1,5 +1,6 @@
 import TensorFlow
 
+@differentiable
 private func l2normalize<Scalar: TensorFlowFloatingPoint>(_ tensor: Tensor<Scalar>) -> Tensor<Scalar> {
     tensor * rsqrt(tensor.squared().sum() + 1e-8)
 }
@@ -57,12 +58,11 @@ public struct SNDense<Scalar: TensorFlowFloatingPoint>: Layer {
         
         var u = Tensor<Scalar>(0)
         var v = withoutDerivative(at: self.v.value)
+        let _mat = withoutDerivative(at: mat)
         for _ in 0..<numPowerIterations {
-            u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
-            v = l2normalize(matmul(u, mat)) // [1, cols]
+            u = l2normalize(matmul(v, _mat.transposed())) // [1, rows]
+            v = l2normalize(matmul(u, _mat)) // [1, cols]
         }
-        u = withoutDerivative(at: u)
-        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         
@@ -161,12 +161,11 @@ public struct SNConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         
         var u = Tensor<Scalar>(0)
         var v = withoutDerivative(at: self.v.value)
+        let _mat = withoutDerivative(at: mat)
         for _ in 0..<numPowerIterations {
-            u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
-            v = l2normalize(matmul(u, mat)) // [1, cols]
+            u = l2normalize(matmul(v, _mat.transposed())) // [1, rows]
+            v = l2normalize(matmul(u, _mat)) // [1, cols]
         }
-        u = withoutDerivative(at: u)
-        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         
@@ -263,12 +262,11 @@ public struct SNTransposedConv2D<Scalar: TensorFlowFloatingPoint>: Layer {
         
         var u = Tensor<Scalar>(0)
         var v = withoutDerivative(at: self.v.value)
+        let _mat = withoutDerivative(at: mat)
         for _ in 0..<numPowerIterations {
-            u = l2normalize(matmul(v, mat.transposed())) // [1, rows]
-            v = l2normalize(matmul(u, mat)) // [1, cols]
+            u = l2normalize(matmul(v, _mat.transposed())) // [1, rows]
+            v = l2normalize(matmul(u, _mat)) // [1, cols]
         }
-        u = withoutDerivative(at: u)
-        v = withoutDerivative(at: v)
         
         let sigma = matmul(matmul(u, mat), v.transposed()) // [1, 1]
         

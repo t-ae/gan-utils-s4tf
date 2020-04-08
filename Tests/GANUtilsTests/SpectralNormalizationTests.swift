@@ -25,4 +25,10 @@ class SpectralNormalizationTests: XCTestCase {
         
         Context.local.learningPhase = .inference
     }
+    
+    func testDifferentiability() {
+        let dense = SNDense<Float>(inputSize: 10, outputSize: 8)
+        let input = Tensor<Float>(randomNormal: [8, 10])
+        _ = gradient(at: dense, input) { $0($1).sum() }
+    }
 }
